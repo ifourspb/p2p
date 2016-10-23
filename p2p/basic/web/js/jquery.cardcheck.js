@@ -130,7 +130,22 @@
                 checkLength: function(len) {
                     return len === 16;
                 }
-            }
+            },{
+				//	5018, 5020, 5038, 5612, 5893, 6304, 6759, 6761, 6762, 6763, 0604, 6390
+                name: 'Maestro',
+                 className: 'maestro',
+                 checkType: function(num) {
+					 if (num.length<4 && num.charAt(0) === '6') {
+						 return true;
+					 }
+                     stringregex =  /^(5018|5020|5038|5612|5893|6304|6390|0604|6759|676[1-3])/
+                     return stringregex.test(num)
+                 },
+                 checkLength: function(len) {
+						 console.log(len);
+                   return len === 12 || len === 13 || len === 14 || len === 15 || len === 16 || len === 17 || len === 18 || len === 19;
+                 }
+			}
         ],
         callback: $.noop
     };

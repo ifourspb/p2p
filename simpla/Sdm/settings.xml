@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<name>
+		СДМ-Банк
+	</name>
+	<settings>
+		<variable>sdm_testmode</variable>
+		<name>Режим оплаты</name>
+		<options>
+			<name>Тестовый режим</name>
+			<value>1</value>
+		</options>
+		<options>
+			<name>Рабочий режим</name>
+			<value>0</value>
+		</options>
+	</settings>	
+	<settings>
+		<variable>sdm_shopid</variable>
+		<name>ID торговца (Merchant)</name>
+	</settings>
+	<settings>
+		<variable>sdm_terminal</variable>
+		<name>Терминал торговца (Terminal)</name>
+	</settings>
+	<settings>
+		<variable>sdm_key</variable>
+		<name>Ключ магазина (Key)</name>
+	</settings>
+</module>

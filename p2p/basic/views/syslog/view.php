@@ -6,24 +6,40 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Syslog */
 
-$this->title = $model->id;
+$this->title = "Системный лог - " .$model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Syslogs', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="syslog-view">
 
+
+<p>
+        <a class="btn btn-success" href="/transactions/">Операции</a>    
+        <a class="btn btn-success" href="/syslog/">Системный лог</a>    
+        <a class="btn btn-success" href="/oplog/">Операционный лог</a>    
+	</p>
+	<hr>
+
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
+	<?php
+	function arr_print($src, $a ) {
+		//var_dump(unserialize($a)); die();
+		if ($a) {
+			$s = '<pre>';
+			ob_start();
+			if ($src == 'callback_bad_sign') {
+				var_dump(unserialize($a));
+			}else {
+				echo(($a));
+			}
+			$s .= ob_get_contents();
+			ob_end_clean();
+			$s .= '</pre>';
+			return $s;
+		}
+	}
+	?>
 
     <?= DetailView::widget([
         'model' => $model,
@@ -31,8 +47,11 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'date',
             'src',
-            'tags:ntext',
-            'descr:ntext',
+             [
+				'label' => 'Описание',
+				'format' => 'raw',
+				'value' => arr_print($model->src, $model->descr)
+			]
         ],
     ]) ?>
 

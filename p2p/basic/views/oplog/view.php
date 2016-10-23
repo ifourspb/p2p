@@ -6,24 +6,20 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Oplog */
 
-$this->title = $model->id;
+$this->title = 'Операционный лог ' . $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Oplogs', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="oplog-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+<p>
+        <a class="btn btn-success" href="/transactions/">Операции</a>    
+        <a class="btn btn-success" href="/syslog/">Системный лог</a>    
+        <a class="btn btn-success" href="/oplog/">Операционный лог</a>    
+	</p>
+	<hr>
 
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
+    <h1><?= Html::encode($this->title) ?></h1>
 
     <?= DetailView::widget([
         'model' => $model,
@@ -33,7 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'transaction_id',
             'ip',
             'agent',
-            'delta_time:datetime',
+            'delta_time',
             'src',
             'descr:ntext',
             'agent_time',

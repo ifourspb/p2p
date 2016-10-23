@@ -44,14 +44,15 @@ class Oplog extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'creation_date' => 'Creation Date',
-            'transaction_id' => 'Order Number',
+            'creation_date' => 'Дата создания',
+            'transaction_id' => 'Номер операции',
             'ip' => 'Ip',
-            'agent' => 'Agent',
-            'delta_time' => 'Delta Time',
-            'src' => 'Src',
-            'descr' => 'Descr',
-            'agent_time' => 'Agent Time',
+            'agent' => 'Браузер клиента',
+            'agent_languages' => 'Языки клиента',
+            'delta_time' => 'Дельта времени',
+            'src' => 'Источник',
+            'descr' => 'Описание',
+            'agent_time' => 'Клиентское время',
         ];
     }
 

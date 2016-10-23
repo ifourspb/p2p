@@ -6,24 +6,16 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use app\models\Oplog;
+use app\models\Syslog;
+use app\models\CaptchaForm;
 use app\models\Transactions;
 use yii\helpers\Html; 
-
-define('BASE_URL', 'http://p2p.bhteam.ru/');
-define('SDM_TEST', 1);
-define('SDM_SHOPKEY', '466B3FE46B9D6030B322EEFAB03BE966');
-define('SDM_TERMINAL', '10007777');
-define('SDM_NAME', 'SDM Bank. Secure Payments.');
-define('SDM_MERCHANT', '123456789012345');
-define('SDM_EMAIL', 'ifourspb@gmail.com');
-define('SDM_BACKREF', BASE_URL . 'backref.php');
-define('SDM_DESC', 'Money transfer');
-define('SDM_FORM_URL', 'https://3ds.sdm.ru/cgi-bin/cgi_link');
-define('SDM_FORMTEST_URL', 'https://3dst.sdm.ru/cgi-bin/cgi_link');
+use yii\captcha\Captcha;
 
 class SiteController extends Controller
 {
 	private $oplog;
+	public $verifyCodeError = 0;
 
     /**
      * @inheritdoc
@@ -77,8 +69,8 @@ class SiteController extends Controller
 		$messages = array();		
 		
 		$data = array();
-		$data['card_number'] = Html::encode('5571060051490102');
-		$data['card_number2'] = Html::encode('5571060051490102');
+		$data['card_number'] = Html::encode(SDM_CARD_FROM);
+		$data['card_number2'] = Html::encode(SDM_CARD_TO);
 		$data['messages'] = false;
 		$data['month'] = false;
 		$data['year'] = false;
@@ -86,8 +78,15 @@ class SiteController extends Controller
 		$data['placeholder'] = false;
 		$data['amount'] = false;
 
+		if (Yii::$app->request->get('action') == 'backref') {
+			return $this->backRef();
+		}
+		if (Yii::$app->request->get('action') == 'callback') {
+			return $this->callback();
+		}
+		
+		
 		if (Yii::$app->request->post()){
-			
 			if (Yii::$app->request->post('step') == '1') {
 				//step one
 				
@@ -119,17 +118,58 @@ class SiteController extends Controller
 				}
 			}
 		}
+		$data['verifyCodeError'] = $this->verifyCodeError;
 		//index page
 		return $this->render('index', $data);
     }
+	
+	public function backRef() {
+		$orders = Yii::$app->session->get( 'orders');
+		if (empty($orders) || !$orders || !is_array($orders)) {
+			return $this->redirect('/');
+		}
+		$order_id = (int)Yii::$app->request->get('id');
+		
+		if (in_array($order_id, $orders)) {
+			if (SDM_TEST == 1)  {
+				$order_id -= 77777;
+			}
+			$data['transaction'] = Transactions::find() ->where(['id' => $order_id])->one();
+		}else {
+			return $this->redirect('/');
+		}
+	
+		if (!$data['transaction']) {
+			return $this->redirect('/');
+		}
+		
+		$delta = 5 - strlen($data['transaction']->id);
+		$data['transaction_id'] = $data['transaction']->id;
+		if ($delta > 0) {
+			for ($i = 0; $i<$delta; $i++) {
+				$data['transaction_id'] = '0' . $data['transaction_id'];
+			}
+		}
+
+		$data['payment_from'] = $data['transaction']->payment_from;
+		$needle = substr($data['payment_from'], 4, 8);
+		$data['payment_from'] = str_replace($needle, 'XXXXXXXX', $data['payment_from']);
+
+		$data['payment_to'] = $data['transaction']->payment_to;
+		$needle = substr($data['payment_to'], 4, 8);
+		$data['payment_to'] = str_replace($needle, 'XXXXXXXX',$data['payment_to']);
+
+		//backref page
+		return $this->render('backref', $data);
+	}
 
 	public function stepTwo( $data )
 	{
 		$transaction = new Transactions();
 		$transaction->creation_date = date("Y-m-d H:i:s");
 		$transaction->payment_from = $data['card_number'];
-		//var_dump($transaction->payment_from); die();
 		$transaction->payment_to = $data['card_number2'];
+		$transaction->placeholder = $data['placeholder'];
 		$transaction->amount = str_replace(',', '.', $data['amount']);
 		$transaction->currency = '643';
 		$transaction->save();
@@ -153,37 +193,48 @@ class SiteController extends Controller
 	public function stepThree( $data )
 	{
 		$saved = Yii::$app->session->get( 'step1');
+		
 		$transaction = Transactions::find() ->where(['id' => (int)$saved['transaction_id']])->one();
 		$vars = $transaction->prepareRequest( $saved );
 		$transaction->user_confirmation_date = date("Y-m-d H:i:s");
-		$transaction->save();
-	
+		$transaction->save();	
+
+		$orders = Yii::$app->session->get( 'orders');
+		if (empty($orders)) {
+			$orders = array();
+		}
+		$orders[] = $vars['order'];
+		Yii::$app->session->set( 'orders', $orders );
+
 
 		$post = array();
-		$post['card'] = $saved['card_number'];
-		$post['exp'] = $vars['month'];
-		$post['exp_year'] = $vars['year'];
-		$post['cvc2'] = $saved['cvv'];
-		$post['payment_to'] = $saved['card_number2'];
-		$post['amount'] = $vars['amount'];
-		$post['currency'] = '643';
-		$post['order'] = $vars['order'];
-		$post['desc'] = $vars['desc'];
-		$post['terminal'] = SDM_TERMINAL;
-		$post['trtype'] = 8;
-		$post['merch_name'] = SDM_NAME;
-		$post['merch_url'] = BASE_URL;
-		$post['merchant'] = SDM_MERCHANT; 
-		$post['email'] = SDM_EMAIL;
-		$post['timestamp'] = $vars['time'];
-		$post['merch_gmt'] = $vars['gmt'];
-		$post['nonce'] = $vars['nonce'];
-		$post['backref'] = $vars['backref'];
-		$post['p_sign'] = $vars['sign'];
-		$post['key'] = $vars['key'];
-		$post['mac'] = $vars['sign'];
-		$post['mac_data'] = $vars['datasign'];
+		$post['CARD'] = $saved['card_number'];
+		$post['NAME'] = $vars['name'];
+		$post['EXP'] = $vars['month'];
+		$post['EXP_YEAR'] = $vars['year'];
+		$post['CVC2'] = $saved['cvv'];
+		$post['CVC2_RC'] = $vars['cvc2_rc'];
+		$post['PAYMENT_TO'] = $saved['card_number2'];
+		$post['AMOUNT'] = $vars['amount'];
+		$post['CURRENCY'] = '643';
+		$post['ORDER'] = $vars['order'];
+		$post['DESC'] = $vars['desc'];
+		$post['TERMINAL'] = SDM_TERMINAL;
+		$post['TRTYPE'] = 8;
+		$post['MERCH_NAME'] = SDM_NAME;
+		$post['MERCH_URL'] = SDM_MERCH_URL;
+		$post['MERCHANT'] = SDM_MERCHANT; 
+		$post['EMAIL'] = SDM_EMAIL;
+		$post['TIMESTAMP'] = $vars['time'];
+		$post['MERCH_GMT'] = $vars['gmt'];
+		$post['NONCE'] = $vars['nonce'];
+		$post['BACKREF'] = $vars['backref'];
+		$post['P_SIGN'] = $vars['sign'];
+		$post['KEY'] = $vars['key'];
+		$post['MAC_DATA'] = $vars['datasign'];
+		$post['MAC'] = $vars['sign'];
 		
+			
 		$data['post'] = $post;
 		
 		if (SDM_TEST == 1)  {
@@ -209,6 +260,12 @@ class SiteController extends Controller
 		if (!isset($data['transaction_id'])) {
 			$messages[] = 'Ошибка передачи данных #002';
 		}
+		
+		if ($messages) {
+			$descr = join("\n", $messages);
+		}else {
+			$descr = 'OK';
+		}
 
 		$oplog = new Oplog();
 		$oplog->creation_date = date("Y-m-d H:i:s");
@@ -219,6 +276,7 @@ class SiteController extends Controller
 		$oplog->agent_language = $oplog->Get_Client_Prefered_Language( $_SERVER['HTTP_ACCEPT_LANGUAGE'] );
 		$oplog->agent_time = $agent_time;
 		$oplog->transaction_id = $data['transaction_id'];
+		$oplog->descr = $descr;
 		$z = $oplog->save();		
 
 		$this->oplog = &$oplog;
@@ -231,13 +289,19 @@ class SiteController extends Controller
 		$time = (int)Yii::$app->request->post('time');
 		$agent_time = date("Y-m-d H:i:s", strtotime(Yii::$app->request->post('agent_time')));	
 
+		if ($messages) {
+			$descr = join("\n", $messages);
+		}else {
+			$descr = 'OK';
+		}
+
 		$oplog = new Oplog();
 		$oplog->creation_date = date("Y-m-d H:i:s");
 		$oplog->ip = $_SERVER['REMOTE_ADDR'];
 		$oplog->agent = $_SERVER['HTTP_USER_AGENT'];
 		$oplog->delta_time = (time() - $time);
 		$oplog->src = 'site/step1';
-		$oplog->descr = join("\n", $messages);
+		$oplog->descr = $descr;
 		$oplog->agent_language = $oplog->Get_Client_Prefered_Language( $_SERVER['HTTP_ACCEPT_LANGUAGE'] );
 		$oplog->agent_time = $agent_time;
 		$z = $oplog->save();		
@@ -252,6 +316,7 @@ class SiteController extends Controller
 		$month = Yii::$app->request->post('month');
 		$year = Yii::$app->request->post('year');
 		$cvv = Yii::$app->request->post('cvv');
+		$captcha_code = Yii::$app->request->post('captcha_code');
 		$placeholder = Yii::$app->request->post('placeholder');
 		$amount = Yii::$app->request->post('amount');
 		$card_number2 = str_replace(' ', '', Yii::$app->request->post('card_number2'));
@@ -272,6 +337,15 @@ class SiteController extends Controller
 		if (floatval($amount) <= 0) {
 			$messages[] = 'Некорректно заполнено поле "Сумма перевода"';
 		}
+		$z = include_once $_SERVER['DOCUMENT_ROOT'] . '/securimage/securimage.php';
+		
+		$securimage = new \Securimage();
+
+		if ($securimage->check($_POST['captcha_code']) == false) {
+			$this->verifyCodeError = true;
+			$messages[] = 'Неверно указан проверочный код';
+		}
+
 		return $messages;		
 	}
 
@@ -315,5 +389,60 @@ class SiteController extends Controller
 		else if (!preg_match("/^\d{3}$/", $cvv)) {return false;}
 		return true;
 	}
+
+	public function callback() {
+		
+		$p_amount = Yii::$app->request->post('Amount');
+		$p_currency = Yii::$app->request->post('Currency');
+		$p_order = Yii::$app->request->post('Order');
+		$order_id = $p_order;
+		if (SDM_TEST == 1)  {
+			$order_id -= 77777;
+		}
+		$p_trtype = Yii::$app->request->post('TRType');
+		$p_result = Yii::$app->request->post('Result');
+		$p_rc = Yii::$app->request->post('RC');
+		$p_auth = Yii::$app->request->post('AuthCode');
+		$p_rrn = Yii::$app->request->post('RRN');
+		$p_int_ref = Yii::$app->request->post('IntRef');
+		$p_sign = Yii::$app->request->post('P_Sign');
+
+
+		$dataSign = (strlen($p_amount) > 0 ? strlen($p_amount).$p_amount : "-").
+					(strlen($p_currency) > 0 ? strlen($p_currency).$p_currency : "-").
+					(strlen($p_order) > 0 ? strlen($p_order).$p_order : "-").
+					(strlen($p_trtype) > 0 ? strlen($p_trtype).$p_trtype : "-").
+					(strlen($p_result) > 0 ? strlen($p_result).$p_result : "-").
+					(strlen($p_rc) > 0 ? strlen($p_rc).$p_rc : "-").
+					(strlen($p_auth) > 0 ? strlen($p_auth).$p_auth : "-").		
+					(strlen($p_rrn) > 0 ? strlen($p_rrn).$p_rrn : "-").
+					(strlen($p_int_ref) > 0 ? strlen($p_int_ref).$p_int_ref : "-");
+
+		$key = SDM_SHOPKEY;   
+		
+		$sign = hash_hmac('sha1', $dataSign,  hex2bin($key));
+		
+		if($sign != $p_sign && false) {
+
+			$syslog = new Syslog();
+			$syslog->date = date("Y-m-d H:i:s");
+			$syslog->src = 'callback_bad_sign';
+			$syslog->descr = serialize( $_POST );
+			$z = $syslog->save();
+			die();
+		}
+		$transaction = Transactions::find() ->where(['id' => $order_id])->one();
+		$transaction->success = 1;
+		$transaction->answer_date = date("Y-m-d H:i:s");
+		$transaction->answer_data = serialize( $_POST );
+		$transaction->rrn = $p_rrn;
+		$transaction->int_ref = $p_int_ref;
+		$transaction->save();
+		
+		die();
+		
+		
+	}
+
     
 }

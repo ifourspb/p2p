@@ -7,17 +7,21 @@ use yii\grid\GridView;
 /* @var $searchModel app\models\OplogSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Oplogs';
+$this->title = 'Операционный лог';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="oplog-index">
 
+<p>
+        <a class="btn btn-success" href="/transactions/">Операции</a>    
+        <a class="btn btn-success" href="/syslog/">Системный лог</a>    
+        <a class="btn btn-success" href="/oplog/">Операционный лог</a>    
+	</p>
+	<hr>
+
     <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <p>
-        <?= Html::a('Create Oplog', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -30,12 +34,17 @@ $this->params['breadcrumbs'][] = $this->title;
             'ip',
             'agent',
             // 'delta_time:datetime',
-            // 'src',
-            // 'descr:ntext',
+             'src',
+             'descr:ntext',
             // 'agent_time',
             // 'agent_language',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+            'class' => 'yii\grid\ActionColumn',
+            'header'=>'Действия', 
+            'headerOptions' => ['width' => '80'],
+            'template' => '{view} {link}',
+		   ],
         ],
     ]); ?>
 </div>

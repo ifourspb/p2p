@@ -10,7 +10,7 @@ use yii\bootstrap\ActiveForm;
 <div class="header">
     <div class="down_header" style="border-bottom: 6px solid #033C7B;border-top: 15px solid #033C7B;">
         <div class="logodiv">
-            <img src="/images/logo.png" alt="Логотип" class="logo" />
+            <a href="/"><img src="/images/logo.png" alt="СДМ Банк" class="logo" /></a>
         </div>
     </div>
 	

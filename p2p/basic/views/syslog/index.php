@@ -12,12 +12,16 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="syslog-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+<p>
+        <a class="btn btn-success" href="/transactions/">Операции</a>    
+        <a class="btn btn-success" href="/syslog/">Системный лог</a>    
+        <a class="btn btn-success" href="/oplog/">Операционный лог</a>    
+	</p>
+	<hr>
+
+    <h1>Системный лог</h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <p>
-        <?= Html::a('Create Syslog', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -26,11 +30,21 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'date',
-            'src',
-            'tags:ntext',
-            'descr:ntext',
+           'src',
+			 [
+				'label' => 'Описание',
+				'format' => 'raw',
+				'value' => function($data){
+					return substr($data->descr, 0, 100) . '...';
+				}
+			],
 
-            ['class' => 'yii\grid\ActionColumn'],
+           [
+            'class' => 'yii\grid\ActionColumn',
+            'header'=>'Действия', 
+            'headerOptions' => ['width' => '80'],
+            'template' => '{view} {link}',
+		   ],
         ],
     ]); ?>
 </div>

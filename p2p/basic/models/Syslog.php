@@ -29,7 +29,7 @@ class Syslog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['date', 'src', 'tags', 'descr'], 'required'],
+            [['date', 'src', 'descr'], 'required'],
             [['date'], 'safe'],
             [['tags', 'descr'], 'string'],
             [['src'], 'string', 'max' => 255],
@@ -43,13 +43,12 @@ class Syslog extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'date' => 'Date',
-            'src' => 'Src',
-            'tags' => 'Tags',
-            'descr' => 'Descr',
-        ];
-    }
-
+            'date' => 'Дата',
+            'src' => 'Источник',
+            'descr' => 'Содержание'
+		];
+	}
+       
     /**
      * @inheritdoc
      * @return SyslogQuery the active query used by this AR class.

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
@@ -6,37 +6,57 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Transactions */
 
-$this->title = $model->id;
+$this->title = 'Операция ' . $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Transactions', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="transactions-view">
 
+<p>
+        <a class="btn btn-success" href="/transactions/">Операции</a>    
+        <a class="btn btn-success" href="/syslog/">Системный лог</a>    
+        <a class="btn btn-success" href="/oplog/">Операционный лог</a>    
+	</p>
+	<hr>
+
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
+	<?php
+	function arr_print( $a ) {
+		//var_dump(unserialize($a)); die();
+		if ($a) {
+			$s = '<pre>';
+			ob_start();
+				var_dump(unserialize($a));
+			$s .= ob_get_contents();
+			ob_end_clean();
+			$s .= '</pre>';
+			return $s;
+		}
+	}
+	?>
 
+   
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
             'id',
+            'user_confirmation_date',
             'creation_date',
+            'placeholder',
+            'payment_from',
             'payment_to',
             'amount',
             'currency',
             'answer_date',
-            'answer_data:ntext',
-            'confirmed',
-            'debug:ntext',
+             [
+				'label' => 'Ответ банка',
+				'format' => 'raw',
+				'value' => arr_print($model->answer_data)
+			],
+            'rrn',
+            'int_ref',
+            'success'
         ],
     ]) ?>
 

@@ -19,7 +19,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'creation_date') ?>
 
+    <?= $form->field($model, 'payment_from') ?>
     <?= $form->field($model, 'payment_to') ?>
+    <?= $form->field($model, 'rrn') ?>
 
     <?= $form->field($model, 'amount') ?>
 

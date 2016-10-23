@@ -288,15 +288,19 @@ $(document).ready(function() {
 // разбиение поля номер карты на разряды
 function getNumeration ()
 {
-var R = 4; // разрядность
-var obj = document.getElementById ('check1');
-obj.onpropertychange = null;
-for (var arr = obj.value.replace (/\s/g, '').split ('').reverse (),
-rez = [], j = 0, lj = arr.length; j < lj; j++)
-   rez [j] = (((j + 1) % R) ? '' : ' ') + arr [j];
-if (rez [j - 1].length == 2) rez [j - 1] = rez [j - 1].substr (1);
-obj.value = rez.reverse ().join ('');
-obj.onpropertychange = getNumeration;
+	var R = 4; // разрядность
+	var obj = document.getElementById ('check1');
+	obj.onpropertychange = null;
+	for (var arr = obj.value.replace (/\s/g, '').split ('').reverse (),
+				rez = [], j = 0, lj = arr.length; j < lj; j++) {
+						rez [j] = (((j + 1) % R) ? '' : ' ') + arr [j];
+	}
+	if (rez [j - 1].length == 2) {
+		rez [j - 1] = rez [j - 1].substr (1);
+	}
+	obj.value = rez.reverse ().join ('');
+	
+	obj.onpropertychange = getNumeration;
 }
 
 // разбиение поля номер карты на разряды

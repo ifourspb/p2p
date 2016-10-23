@@ -49,6 +49,13 @@ class SyslogSearch extends Syslog
             'query' => $query,
         ]);
 
+		if (!$params) {
+			$dataProvider->setSort([
+				'defaultOrder' => ['id'=>SORT_DESC]
+			]);
+		}
+
+
         $this->load($params);
 
         if (!$this->validate()) {
