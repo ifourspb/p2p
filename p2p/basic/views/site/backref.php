@@ -5,6 +5,45 @@
 $this->title = 'Статус перевода';
 use yii\bootstrap\ActiveForm;
 
+if ($print) {
+?>
+<pre>
+*** СДМ-БАНК” (ПАО) ***
+
+ВОЛОКОЛАМСКОЕ Ш. 73
+
+ТЕЛЕФОНЫ ЦЕНТРА ОБСЛУЖИВАНИЯ:
+
+8-800-200-02-23 - ЗВОНОК ПО РОССИИ БЕСПЛАТНЫЙ
+
+ДАТА <?=date("d/m/Y")?> ВРЕМЯ <?=date("H:i:s")?>
+
+ДАТА ПЛАТЕЖА <?=date("d.m.Y", strtotime($transaction->creation_date))?> ВРЕМЯ ПЛАТЕЖА <?=date("H:i:s", strtotime($transaction->creation_date))?>
+
+НОМЕР КАРТЫ ПЛАТЕЛЬЩИКА: <?=$payment_from?>
+
+
+-- -- -- -- -- -- -- ПЕРЕВОД С КАРТЫ НА КАРТУ-- -- -- -- -- -- --
+
+НОМЕР КАРТЫ ПОЛУЧАТЕЛЯ: <?=$payment_to?>
+
+ТЕРМИНАЛ : <?=SDM_TERMINAL?>
+
+КОД АВТОРИЗАЦИИ : <?=$transaction->authcode?>
+
+RRN : <?=$transaction->rrn?>
+
+СУММА : <?=$transaction->amount?> RUR
+
+КОМИССИЯ : 0.00 RUR
+
+С НАИЛУЧШИМИ ПОЖЕЛАНИЯМИ, СДМ -БАНК
+</pre>
+<script>
+window.print();
+</script>
+
+<?php }else {
 
 ?>
 <div class="header">
@@ -23,7 +62,7 @@ use yii\bootstrap\ActiveForm;
 			<h1 style="margin: 10px 0px 12px 25px;">Успешная оплата</h1>
 		</div>
 		<div style="margin: 10px 0px 12px 25px; float: right;">
-			<input type="button" style="background: url(/images/1_b.png) no-repeat; width: 135px; height: 28px; cursor: pointer; border-radius: 4px;" value="" onclick="window.print(); return false"/>
+			<a href="<?php echo $print_url; ?>"><img src="images/1_b.png"> </a>
 			
 		</div>
 	</div>
@@ -61,6 +100,10 @@ use yii\bootstrap\ActiveForm;
 						<tr>
 							<td>Номер платежа</td>
 							<td><?=$transaction_id?></td>
+						</tr>
+						<tr>
+							<td>Код авторизации</td>
+							<td><?=$transaction->authcode?></td>
 						</tr>
 						<tr>
 							<td>RRN</td>
@@ -122,3 +165,5 @@ use yii\bootstrap\ActiveForm;
 	</div>
 
     </div>
+
+<?php } ?>

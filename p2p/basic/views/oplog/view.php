@@ -20,7 +20,24 @@ $this->params['breadcrumbs'][] = $this->title;
 	<hr>
 
     <h1><?= Html::encode($this->title) ?></h1>
-
+	<?php
+	function arr_print($src, $a ) {
+		//var_dump(unserialize($a)); die();
+		if ($a) {
+			$s = '<pre>';
+			ob_start();
+			if ($src == 'callback') {
+				var_dump(unserialize($a));
+			}else {
+				echo(($a));
+			}
+			$s .= ob_get_contents();
+			ob_end_clean();
+			$s .= '</pre>';
+			return $s;
+		}
+	}
+	?>
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
@@ -31,7 +48,11 @@ $this->params['breadcrumbs'][] = $this->title;
             'agent',
             'delta_time',
             'src',
-            'descr:ntext',
+            [
+				'label' => 'Описание',
+				'format' => 'raw',
+				'value' => arr_print($model->src, $model->descr)
+			],
             'agent_time',
             'agent_language',
         ],

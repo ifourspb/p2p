@@ -20,7 +20,7 @@ define('SDM_TEST', 1);
 define('SDM_CARD_FROM', '4402040058724552');
 define('SDM_CARD_TO', '4402040051860072');
 define('SDM_SHOPKEY', '466B3FE46B9D6030B322EEFAB03BE966');
-define('SDM_TERMINAL', '10007777');
+define('SDM_TERMINAL', '10001111');
 define('SDM_NAME', 'SDM Bank. Secure Payments.');
 define('SDM_MERCHANT', '123456789012345');
 define('SDM_EMAIL', 'ifourspb@gmail.com');

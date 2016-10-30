@@ -115,7 +115,8 @@
                     return num.charAt(0) === '4';
                 },
                 checkLength: function(len) {
-                    return len === 13 || len === 16;
+					console.log('visa ' + len);
+                    return len === 13 || len === 16 || len === 18;
                 }
             },
             {
@@ -128,7 +129,7 @@
                     return false;
                 },
                 checkLength: function(len) {
-                    return len === 16;
+                    return len === 16 || len === 18;
                 }
             },{
 				//	5018, 5020, 5038, 5612, 5893, 6304, 6759, 6761, 6762, 6763, 0604, 6390

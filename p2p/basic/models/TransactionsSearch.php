@@ -51,7 +51,7 @@ class TransactionsSearch extends Transactions
             'query' => $query,
         ]);
 
-		if (!$params) {
+		if (!isset($params['sort'])) {
 			$dataProvider->setSort([
 				'defaultOrder' => ['id'=>SORT_DESC]
 			]);

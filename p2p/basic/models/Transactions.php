@@ -36,7 +36,7 @@ class Transactions extends \yii\db\ActiveRecord
         return [
             [['creation_date', 'answer_date', 'user_confirmation_date'], 'safe'],
             [['success'], 'integer'],
-            [['payment_to','payment_from', 'answer_data', 'debug', 'placeholder', 'rrn', 'int_ref'], 'string'],
+            [['payment_to','payment_from', 'answer_data', 'debug', 'placeholder', 'rrn', 'int_ref', 'authcode'], 'string'],
              [['currency'], 'string', 'max' => 3],
         ];
     }
@@ -58,6 +58,7 @@ class Transactions extends \yii\db\ActiveRecord
             'answer_data' => 'Ответ банка',
             'success' => 'Успех',
             'debug' => 'Доп.инфо',
+            'authcode' => 'Код авторизации',
             'user_confirmation_date' => 'Подтверждение юзером',
         ];
     }

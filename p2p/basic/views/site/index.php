@@ -49,8 +49,8 @@ use yii\captcha\Captcha;
 					 <br/><span id="card1_info"></span>
 				</div>
 				
-			    <div class="inside" style="margin-left:30px;margin-top:8px; float: left;">
-				    <label for="check2" style="color:black;font-size:12px;font-weight:bold;margin-bottom: 10px">Срок действия карты</label><span style="color:red;">*</span><br />
+			    <div class="inside" style="margin-left:30px;margin-top:4px; float: left; height: 70px;">
+				    <label for="check2" style="color:black;font-size:12px;font-weight:bold;margin-bottom: 5px">Срок действия карты</label><span style="color:red;">*</span><br />
 					<select name="month" required id="check2" style="height:32px;">
 						<option value="" disabled selected> Месяц</option>					
 						<?
@@ -109,15 +109,16 @@ use yii\captcha\Captcha;
 					<br/><span id="card2_info"></span>
 			    </div>
 
-				 <div class="inside" style="margin-left:20px;margin-top:8px; float: left;">
-				   <label for="check5" style="color:black;font-size:12px;font-weight:bold;margin-bottom: 10px">CVV2/CVC2</label><span style="color:red;">*</span><br />
+				 <div class="inside" style="margin-left:20px;margin-top:4px; float: left; height: 70px;">
+				   <label for="check5" style="color:black;font-size:12px;font-weight:bold;margin-bottom: 5px">CVV2/CVC2</label><span style="color:red;">*</span><br />
 			        <input maxlength="3" required style="width:50px;height:32px;margin-left:10px;" name="cvv" placeholder=" 000" id="check5" type="text" value="<?=$cvv?>">
-					<br/><span id="card3_info" style="margin-left:10px;"></span>
+					<br/>
+					<span id="card3_info" style="margin-left:10px;"></span>
                 </div>				
 
 				<div style="clear: both;"></div>
 			
-			    <div class="inside" style="margin-left:30px;margin-top:8px;">
+			    <div class="inside" style="margin-left:30px;margin-top:0px;">
 				    <label for="check4" style="color:black;font-size:12px;font-weight:bold; margin-bottom: 5px;">Держатель карты</label><span style="color:red;">*</span><br />
 			        <input onkeyup="return LoginCheck(this);" required style="width:320px;height:25px;" placeholder=" Имя Фамилия (как указано на карте)" id="check4" value="<?=$placeholder?>" type="text" name="placeholder">
 					<br/><span id="card4_info"></span>

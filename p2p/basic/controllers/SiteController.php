@@ -58,6 +58,15 @@ class SiteController extends Controller
             ],
         ];
     }
+		
+	 public function beforeAction($action)
+    {
+     if (Yii::$app->request->get('action') == 'callback') {
+            # disable csrf for callback request
+            $this->enableCsrfValidation = false;
+        }
+        return parent::beforeAction($action);
+    } 
 
     /**
      * Displays step 1.
@@ -94,7 +103,8 @@ class SiteController extends Controller
 				$data['year'] = Html::encode(Yii::$app->request->post('year'));
 				$data['cvv'] = Html::encode(Yii::$app->request->post('cvv'));
 				$data['placeholder'] = Html::encode(Yii::$app->request->post('placeholder'));
-				$data['amount'] = Html::encode(Yii::$app->request->post('amount'));
+				$data['amount'] =  number_format( floatval( str_replace(',', '.', Yii::$app->request->post('amount'))) , 2);
+				$data['amount'] = Html::encode($data['amount']);
 
 				$messages = $this->checkStepOne();
 				//check card data
@@ -129,7 +139,9 @@ class SiteController extends Controller
 			return $this->redirect('/');
 		}
 		$order_id = (int)Yii::$app->request->get('id');
-		
+		$print = (int)Yii::$app->request->get('print');
+		$data['print_url'] = BASE_URL . '?action=backref&id=' . $order_id . '&print=1';
+
 		if (in_array($order_id, $orders)) {
 			if (SDM_TEST == 1)  {
 				$order_id -= 77777;
@@ -159,21 +171,24 @@ class SiteController extends Controller
 		$needle = substr($data['payment_to'], 4, 8);
 		$data['payment_to'] = str_replace($needle, 'XXXXXXXX',$data['payment_to']);
 
+		$data['print'] = $print;
+
 		//backref page
 		return $this->render('backref', $data);
 	}
 
 	public function stepTwo( $data )
 	{
+	
 		$transaction = new Transactions();
 		$transaction->creation_date = date("Y-m-d H:i:s");
 		$transaction->payment_from = $data['card_number'];
 		$transaction->payment_to = $data['card_number2'];
 		$transaction->placeholder = $data['placeholder'];
-		$transaction->amount = str_replace(',', '.', $data['amount']);
+		$transaction->amount = $data['amount'];
 		$transaction->currency = '643';
 		$transaction->save();
-
+	
 		$this->oplog->transaction_id = $transaction->id;
 		$this->oplog->save();
 
@@ -392,6 +407,31 @@ class SiteController extends Controller
 
 	public function callback() {
 		
+		$data = array(
+						'ip' => $_SERVER['REMOTE_ADDR'],
+						'post' => $_POST,
+						'get' => $_GET
+		);
+
+		$oplog = new Oplog();
+		$oplog->creation_date = date("Y-m-d H:i:s");
+		$oplog->ip = $_SERVER['REMOTE_ADDR'];
+		$oplog->agent = $_SERVER['HTTP_USER_AGENT'];
+		$oplog->delta_time =0;
+		$oplog->src = 'callback';
+		$oplog->agent_language = $oplog->Get_Client_Prefered_Language( $_SERVER['HTTP_ACCEPT_LANGUAGE'] );
+		$oplog->agent_time = date("Y-m-d H:i:s");
+		$oplog->transaction_id = 0;
+		$oplog->descr = serialize( $data );
+		$z = $oplog->save();		
+
+		ob_start();
+		var_dump($_POST);
+		$buf = ob_get_contents();
+		ob_end_clean();
+
+		file_put_contents("/tmp/p2p_post", $buf);
+		
 		$p_amount = Yii::$app->request->post('Amount');
 		$p_currency = Yii::$app->request->post('Currency');
 		$p_order = Yii::$app->request->post('Order');
@@ -407,6 +447,21 @@ class SiteController extends Controller
 		$p_int_ref = Yii::$app->request->post('IntRef');
 		$p_sign = Yii::$app->request->post('P_Sign');
 
+		/*$p_amount = '111.00';
+		$p_currency = '643';
+		$p_order = '77864';
+		$order_id = $p_order;
+		if (SDM_TEST == 1)  {
+			$order_id -= 77777;
+		}
+		$p_trtype ='8';
+		$p_result = '3';
+		$p_rc = '-17';
+		$p_auth = '';
+		$p_rrn = '';
+		$p_int_ref = '';
+		$p_sign = '2741C62B61BD03081E1F60061722CA2098F3E71B';*/
+
 
 		$dataSign = (strlen($p_amount) > 0 ? strlen($p_amount).$p_amount : "-").
 					(strlen($p_currency) > 0 ? strlen($p_currency).$p_currency : "-").
@@ -419,25 +474,47 @@ class SiteController extends Controller
 					(strlen($p_int_ref) > 0 ? strlen($p_int_ref).$p_int_ref : "-");
 
 		$key = SDM_SHOPKEY;   
-		
+
 		$sign = hash_hmac('sha1', $dataSign,  hex2bin($key));
+
+		/*$key2 = pack("H*", $key);   
+		$sign3 = (bx_hmac("sha1", $dataSign, $key2));*/
+
+		//var_dump($sign, $p_sign, $dataSign, $key); die('1');
 		
-		if($sign != $p_sign && false) {
+		if (strtoupper($sign) != $p_sign) {
 
 			$syslog = new Syslog();
 			$syslog->date = date("Y-m-d H:i:s");
 			$syslog->src = 'callback_bad_sign';
-			$syslog->descr = serialize( $_POST );
+			$data = array(
+						'ip' => $_SERVER['REMOTE_ADDR'],
+						'post' => $_POST,
+						'get' => $_GET,
+			);
+			$syslog->descr = serialize( $data );
 			$z = $syslog->save();
 			die();
 		}
 		$transaction = Transactions::find() ->where(['id' => $order_id])->one();
-		$transaction->success = 1;
-		$transaction->answer_date = date("Y-m-d H:i:s");
-		$transaction->answer_data = serialize( $_POST );
-		$transaction->rrn = $p_rrn;
-		$transaction->int_ref = $p_int_ref;
-		$transaction->save();
+		if ($transaction) {
+			if ($p_result == 0) {
+				$transaction->success = 1;
+			}else {
+				$transaction->success = 0;
+			}
+			$transaction->answer_date = date("Y-m-d H:i:s");
+			$data = array(
+						'ip' => $_SERVER['REMOTE_ADDR'],
+						'post' => $_POST,
+						'get' => $_GET,
+			);
+			$transaction->answer_data = serialize( $d );
+			$transaction->authcode = $p_auth;
+			$transaction->rrn = $p_rrn;
+			$transaction->int_ref = $p_int_ref;
+			$transaction->save();
+		}
 		
 		die();
 		
@@ -445,4 +522,32 @@ class SiteController extends Controller
 	}
 
     
+}
+
+
+if(!function_exists("bx_hmac"))
+{
+	function bx_hmac($algo, $data, $key, $raw_output = false) 
+	{ 
+		$algo = strtolower($algo); 
+		$pack = "H".strlen($algo("test")); 
+		$size = 64; 
+		$opad = str_repeat(chr(0x5C), $size); 
+		$ipad = str_repeat(chr(0x36), $size); 
+
+		if (strlen($key) > $size) { 
+			$key = str_pad(pack($pack, $algo($key)), $size, chr(0x00)); 
+		} else { 
+			$key = str_pad($key, $size, chr(0x00)); 
+		} 
+
+		$lenKey = strlen($key) - 1;
+		for ($i = 0; $i < $lenKey; $i++) { 
+			$opad[$i] = $opad[$i] ^ $key[$i]; 
+			$ipad[$i] = $ipad[$i] ^ $key[$i]; 
+		} 
+
+		$output = $algo($opad.pack($pack, $algo($ipad.$data))); 
+		return ($raw_output) ? pack($pack, $output) : $output; 
+	} 
 }

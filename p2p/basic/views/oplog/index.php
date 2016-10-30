@@ -35,7 +35,13 @@ $this->params['breadcrumbs'][] = $this->title;
             'agent',
             // 'delta_time:datetime',
              'src',
-             'descr:ntext',
+             [
+				'label' => 'Описание',
+				'format' => 'raw',
+				'value' => function($data){
+					return substr($data->descr, 0, 100) . '...';
+				}
+			],
             // 'agent_time',
             // 'agent_language',
 

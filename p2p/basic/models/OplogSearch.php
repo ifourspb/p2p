@@ -48,8 +48,9 @@ class OplogSearch extends Oplog
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
+
 		
-		if (!$params) {
+		if (!isset($params['sort'])) {
 			$dataProvider->setSort([
 				'defaultOrder' => ['id'=>SORT_DESC]
 			]);

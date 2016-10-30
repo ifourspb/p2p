@@ -55,6 +55,7 @@ $this->params['breadcrumbs'][] = $this->title;
 				'value' => arr_print($model->answer_data)
 			],
             'rrn',
+            'authcode',
             'int_ref',
             'success'
         ],

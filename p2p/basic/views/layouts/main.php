@@ -159,7 +159,7 @@ AppAsset::register($this);
                 } else if (!result.cardClass) {
                     message = 'Мы принимаем карты следующих видов: ' + types + '.';
                 } else if (!result.validLen) {
-                    message = 'Недостаточное количиство символов';
+                    message = 'Некорректное количество символов';
                 } else if (!result.validLuhn) {
                     message = 'Некорректный номер карты ' + result.cardName + '';
                 } else {

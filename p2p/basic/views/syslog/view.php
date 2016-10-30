@@ -28,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		if ($a) {
 			$s = '<pre>';
 			ob_start();
-			if ($src == 'callback_bad_sign') {
+			if ($src == 'callback_bad_sign' || $src == 'NO ANSWER') {
 				var_dump(unserialize($a));
 			}else {
 				echo(($a));

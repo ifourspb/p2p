@@ -35,6 +35,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'payment_from',
             'payment_to',
             'amount',
+            'authcode',
+            'int_ref',
             'rrn',
             'success',
             // 'answer_date',
